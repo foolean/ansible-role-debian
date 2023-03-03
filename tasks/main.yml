@@ -6,7 +6,7 @@
 # We put the entire role in a block so we can create
 # a role specific tag, which saves the caller from
 # having to do so in their playbook.
-- name: Role foolean/redhat
+- name: Role foolean/debian
   block:
 
     - name: CIS | Ensure prelink is not installed
@@ -21,10 +21,29 @@
         name: 'apport'
         state: absent
 
+    - name: CIS | Ensure permissions on APT log files are configured (stat)
+      become: true
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      register: apt_stat_data
+      with_items:
+        - '/var/log/apt/history.log'
+        - '/var/log/apt/eipp.log.xz'
+
+    - name: CIS | Ensure permissions on APT log files are configured (set)
+      become: true
+      ansible.builtin.file:
+        name: "{{ item.item }}"
+        owner: 'root'
+        group: 'root'
+        mode: '0640'
+      with_items: "{{ apt_stat_data.results }}"
+      when: item.stat.exists
+
   # This block is only applicable to RedHat based systems
   when:
     - ansible_os_family == "Debian"
 
   # Tags to be applied to this role (block)
   tags:
-    - 'role_foolean_redhat'
+    - 'role_foolean_debian'
