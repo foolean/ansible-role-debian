@@ -40,9 +40,9 @@
       with_items: "{{ apt_stat_data.results }}"
       when: item.stat.exists
 
-  # This block is only applicable to RedHat based systems
+  # This block is only applicable to Debian based systems
   when:
-    - ansible_os_family == "Debian"
+    - ansible_os_family|lower == "debian"
 
   # Tags to be applied to this role (block)
   tags:
